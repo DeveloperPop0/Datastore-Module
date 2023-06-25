@@ -1,41 +1,49 @@
-# Compiled Lua sources
-luac.out
+--//[=== TODO ===]\\--
 
-# luarocks build files
-*.src.rock
-*.zip
-*.tar.gz
+--// You must turn on "Studio access to API services" in the Game Settings for it to work;
+--// Put this in ReplicatedStorage;
 
-# Object files
-*.o
-*.os
-*.ko
-*.obj
-*.elf
+--//[============]\\--
 
-# Precompiled Headers
-*.gch
-*.pch
+local data = {}
+local DataService = game:GetService("DataStoreService")
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-*.def
-*.exp
+function data.SaveData(Player, Value)
+	local DataStore = DataService:GetDataStore(Value.Name)
+	local Data
+	local success, err = pcall(function()
+		Data = DataStore:GetAsync(Player.UserId.."-"..Value.Name)
+	end)
+	
+	if success then
+		Value.Value = Data
+		print("Successfully loaded data. {"..DataStore.Name.."}")
+	else
+		print("There was an error while getting the data.")
+		warn(err)
+	end	
+end
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+function data.LoadData(Player, Value)
+	local DataStore = DataService:GetDataStore(Value.Name)
+	local success, err = pcall(function()
+		DataStore:SetAsync(Player.UserId.."-"..Value.Name, Value.Value)
+	end)
+	
+	if success then
+		print("Successfully saved data. {"..DataStore.Name.."}")
+	else
+		print("There was an error while saving the data.")
+		warn(err)
+	end
+end
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+function data.BindToClose(Value)
+	for i, v in pairs(game.Players:GetPlayers()) do
+		local DataStore = DataService:GetDataStore(Value.Name)
+		DataStore:SetAsync(v.UserId.."-"..Value.Name, Value.Value)
+		print("Successfully saved data. {"..DataStore.Name.."}")
+	end
+end
 
+return data
